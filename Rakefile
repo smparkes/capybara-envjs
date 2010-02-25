@@ -8,7 +8,7 @@ Hoe.plugin :newgem, :debugging, :doofus, :git
 
 Hoe.spec 'capybara-envjs' do
   developer 'Steven Parkes', 'smparkes@smparkes.net'
-  self.version = "0.1.0"
+  self.version = "0.1.0.pre0"
 
   self.readme_file      = 'README.rdoc'
   self.extra_rdoc_files = Dir['*.rdoc']
