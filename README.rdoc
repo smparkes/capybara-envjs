@@ -5,7 +5,7 @@
 == Description:
 
 capybara-envjs is a {Capybara}[http://github.com/jnicklas/capybara] driver for the envjs gem ({GitHub}[http://github.com/smparkes/env-js],
-{rubygems.org}[http://rubygems.org/gems/envjs].
+{rubygems.org}[http://rubygems.org/gems/envjs]).
 It is similar to Capybara's rack-test driver in that it runs tests against your rack aplplication directly but fully supports javascript in your appliction.
 
 == Install:
