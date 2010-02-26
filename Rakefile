@@ -4,7 +4,7 @@ gem 'hoe', '>= 2.5'
 require 'hoe'
 
 Hoe.plugin 
-Hoe.plugin :newgem, :debugging, :doofus, :git
+Hoe.plugin :debugging, :doofus, :git
 Hoe.plugins.delete :rubyforge
 
 Hoe.spec 'capybara-envjs' do
