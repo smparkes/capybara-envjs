@@ -147,14 +147,19 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       if e["CONTENT_TYPE"] =~ %r{^multipart/form-data;}
         e["CONTENT_LENGTH"] ||= params.length
       end
-      # print "send #{method} #{url}\n"
-      send method, url, params, e
-      while response.status == 302
-        method = :get
-        # p response.nil?, (response and response.status)
-        url = response.location
-        # print "send #{method} #{url}\n"
+      begin
+        # puts "send #{method} #{url} #{params}"
         send method, url, params, e
+        while response.status == 302
+          params = {}
+          method = :get
+          url = response.location
+          # puts "redirect #{method} #{url} #{params}"
+          send method, url, params, e
+        end
+      rescue Exception => e
+        print "got #{e} #{response.inspect}\n"
+        raise e
       end
       @source = response.body
       response.headers.each do |k,v|
@@ -167,6 +172,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   def visit(path)
+    # puts "visit #{path}"
     as_url = URI.parse path
     base = URI.parse "http://example.com"
     path = (base + as_url).to_s
