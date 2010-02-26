@@ -137,7 +137,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     browser["window"]["$envx"]["connection"] =
     browser.master["connection"] = @connection = proc do |*args|
       xhr, responseHandler, data = *args
-      url = xhr.url.sub %r{^file://}, ""
+      url = xhr.url.sub %r{^http://example.com}, ""
       params = data || {}
       method = xhr["method"].downcase.to_sym
       e = env;
@@ -167,6 +167,9 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   def visit(path)
+    as_url = URI.parse path
+    base = URI.parse "http://example.com"
+    path = (base + as_url).to_s
     browser["window"].location.href = path
   end
 
