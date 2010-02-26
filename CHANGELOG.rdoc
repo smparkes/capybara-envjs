@@ -1,0 +1,5 @@
+=== 0.1.0.pre2 / 2010-02-25
+
+* initial commit
+* provide a fake http://host prefix for URLs
+* cucumber support (tested for a simple app)
