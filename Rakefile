@@ -5,6 +5,7 @@ require 'hoe'
 
 Hoe.plugin 
 Hoe.plugin :newgem, :debugging, :doofus, :git
+Hoe.plugins.delete :rubyforge
 
 Hoe.spec 'capybara-envjs' do
   developer 'Steven Parkes', 'smparkes@smparkes.net'
