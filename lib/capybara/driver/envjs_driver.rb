@@ -134,12 +134,20 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   attr_reader :app
+  attr_reader :app_host
+
+  def rack_test?
+    @rack_test
+  end
 
   def initialize(app)
 
-    enable_rack_test = !Capybara.app_host
 
-    if enable_rack_test
+    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || "http://example.com")
+
+    @rack_test = @app_host =~ %r{^https?://[^.]*\.?example\.(com|org)}
+
+    if rack_test?
       require 'rack/test'
       class << self; self; end.instance_eval do
         include ::Rack::Test::Methods
@@ -152,7 +160,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
     master_load = browser.master["load"]
 
-    if enable_rack_test
+    if rack_test?
       browser.master["load"] = proc do |*args|
         if args.size == 2 and args[1].to_s != "[object split_global]"
           file, window = *args
@@ -166,7 +174,10 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       browser["window"]["$envx"]["connection"] =
       browser.master["connection"] = @connection = proc do |*args|
         xhr, responseHandler, data = *args
-        url = xhr.url.sub %r{^http://examplex.com}, ""
+        url = xhr.url
+        if url.index(app_host) == 0
+          url.slice! 0..(app_host.length-1)
+        end
         params = data || {}
         method = xhr["method"].downcase.to_sym
         e = env;
@@ -202,9 +213,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   def visit(path)
-    # puts "visit #{path}"
     as_url = URI.parse path
-    base = URI.parse(Capybara.app_host || "http://examplex.com")
+    base = URI.parse app_host
     path = (base + as_url).to_s
     browser["window"].location.href = path
   end
@@ -214,15 +224,24 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
   
   def source
-    @source
+    browser["window"].document.__original_text__
   end
 
   def body
     browser["window"].document.xml
   end
 
+  class Headers
+    def initialize hash
+      @hash = hash
+    end
+    def [] key
+      @hash[key.downcase]
+    end
+  end
+
   def response_headers
-    response.headers
+    rack_test? ? response.headers : Headers.new(browser["window"]["document"]["__headers__"])
   end
 
   def find(selector)
@@ -258,10 +277,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
     
     @_browser
-  end
-
-  def obeys_absolute_xpath
-    true
   end
 
   def has_shortcircuit_timeout
