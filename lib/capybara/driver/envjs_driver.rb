@@ -59,7 +59,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         node.innerText = value
       else
         case node.getAttribute("type")
-        when "checkbox", "radio"; node.checked = value
+        when "checkbox", "radio"
+          node.click if node.checked != value
         else; node.setAttribute("value",value)
         end
       end
