@@ -279,7 +279,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     @_browser
   end
 
-  def has_shortcircuit_timeout
+  def has_shortcircuit_timeout?
     true
   end
 
