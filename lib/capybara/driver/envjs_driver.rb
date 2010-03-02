@@ -1,4 +1,25 @@
-require 'rack/test'
+if false # for testing ... but seems okay
+  class Thread
+    def self.start
+      puts caller(0)
+      raise "hell"
+    end
+    def initialize *args
+      puts caller(0)
+      raise "hell"
+    end
+  end
+
+  module Timeout
+    def timeout *args
+      # p "!!! #{args.inspect}"
+      # puts caller(0)
+      return yield
+      raise "hell #{args.inspect}"
+    end
+    module_function :timeout
+  end
+end
 
 class Capybara::Driver::Envjs < Capybara::Driver::Base
   class Node < Capybara::Node
@@ -48,7 +69,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       option_node = all_unfiltered("//option[text()='#{option}']") || all_unfiltered("//option[contains(.,'#{option}')]")
       option_node[0].node.selected = true
     rescue Exception => e
-      # print e
       options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
       raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
     end
@@ -62,7 +82,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         option_node = (all_unfiltered("//option[text()='#{option}']") || all_unfiltered("//option[contains(.,'#{option}')]")).first
         option_node.node.selected = false
       rescue Exception => e
-        # print e
         options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
         raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
       end
@@ -113,68 +132,78 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
   end
 
-  include ::Rack::Test::Methods
   attr_reader :app
 
-  alias_method :response, :last_response
-  alias_method :request, :last_request
-
   def initialize(app)
+
+    enable_rack_test = !Capybara.app_host
+
+    if enable_rack_test
+      require 'rack/test'
+      class << self; self; end.instance_eval do
+        include ::Rack::Test::Methods
+        alias_method :response, :last_response
+        alias_method :request, :last_request
+      end
+    end
+
     @app = app
 
     master_load = browser.master["load"]
 
-    browser.master["load"] = proc do |*args|
-      if args.size == 2 and args[1].to_s != "[object split_global]"
-        file, window = *args
-        get(file, {}, env)
-        window["evaluate"].call response.body
-      else
-        master_load.call *args
-      end
-    end
-
-    browser["window"]["$envx"]["connection"] =
-    browser.master["connection"] = @connection = proc do |*args|
-      xhr, responseHandler, data = *args
-      url = xhr.url.sub %r{^http://example.com}, ""
-      params = data || {}
-      method = xhr["method"].downcase.to_sym
-      e = env;
-      if method == :post or method == :put
-        e.merge! "CONTENT_TYPE" => xhr.headers["Content-Type"]
-      end
-      if e["CONTENT_TYPE"] =~ %r{^multipart/form-data;}
-        e["CONTENT_LENGTH"] ||= params.length
-      end
-      begin
-        # puts "send #{method} #{url} #{params}"
-        send method, url, params, e
-        while response.status == 302
-          params = {}
-          method = :get
-          url = response.location
-          # puts "redirect #{method} #{url} #{params}"
-          send method, url, params, e
+    if enable_rack_test
+      browser.master["load"] = proc do |*args|
+        if args.size == 2 and args[1].to_s != "[object split_global]"
+          file, window = *args
+          get(file, {}, env)
+          window["evaluate"].call response.body
+        else
+          master_load.call *args
         end
-      rescue Exception => e
-        print "got #{e} #{response.inspect}\n"
-        raise e
       end
-      @source = response.body
-      response.headers.each do |k,v|
-        xhr.responseHeaders[k] = v
+
+      browser["window"]["$envx"]["connection"] =
+      browser.master["connection"] = @connection = proc do |*args|
+        xhr, responseHandler, data = *args
+        url = xhr.url.sub %r{^http://examplex.com}, ""
+        params = data || {}
+        method = xhr["method"].downcase.to_sym
+        e = env;
+        if method == :post or method == :put
+          e.merge! "CONTENT_TYPE" => xhr.headers["Content-Type"]
+        end
+        if e["CONTENT_TYPE"] =~ %r{^multipart/form-data;}
+          e["CONTENT_LENGTH"] ||= params.length
+        end
+        begin
+          # puts "send #{method} #{url} #{params}"
+          send method, url, params, e
+          while response.status == 302
+            params = {}
+            method = :get
+            url = response.location
+            # puts "redirect #{method} #{url} #{params}"
+            send method, url, params, e
+          end
+        rescue Exception => e
+          print "got #{e} #{response.inspect}\n"
+          raise e
+        end
+        @source = response.body
+        response.headers.each do |k,v|
+          xhr.responseHeaders[k] = v
+        end
+        xhr.status = response.status
+        xhr.responseText = response.body
+        responseHandler.call
       end
-      xhr.status = response.status
-      xhr.responseText = response.body
-      responseHandler.call
     end
   end
 
   def visit(path)
     # puts "visit #{path}"
     as_url = URI.parse path
-    base = URI.parse "http://example.com"
+    base = URI.parse(Capybara.app_host || "http://examplex.com")
     path = (base + as_url).to_s
     browser["window"].location.href = path
   end
@@ -223,7 +252,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     unless @_browser
       require 'johnson/tracemonkey'
       require 'envjs/runtime'
-      @_browser = Johnson::Runtime.new :size => 0x4000000
+      @_browser = Johnson::Runtime.new :size => Integer(ENV["JOHNSON_HEAP_SIZE"] || 0x4000000)
       @_browser.extend Envjs::Runtime
     end
     
