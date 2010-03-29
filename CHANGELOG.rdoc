@@ -1,3 +1,8 @@
+=== 0.1.0 / 2010-03-29
+
+* updated to use stock capybara 3.6
+* add support for both rack-test and external modes
+
 === 0.1.0.pre2 / 2010-02-25
 
 * initial commit
