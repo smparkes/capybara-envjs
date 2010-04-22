@@ -1,3 +1,7 @@
+=== 0.1.2 / 2010-04-22
+
+* Spelling corrections in the README.rdoc [Brian Cardarella]
+
 === 0.1.1 / 2010-04-22
 
 * neglected to set the ready state on XHR requests
