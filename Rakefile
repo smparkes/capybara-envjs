@@ -9,7 +9,7 @@ Hoe.plugins.delete :rubyforge
 
 Hoe.spec 'capybara-envjs' do
   developer 'Steven Parkes', 'smparkes@smparkes.net'
-  self.version = "0.1.0"
+  self.version = "0.1.1"
 
   self.readme_file      = 'README.rdoc'
   self.extra_rdoc_files = Dir['*.rdoc']
