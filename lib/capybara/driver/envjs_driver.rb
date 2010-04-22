@@ -207,6 +207,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         end
         xhr.status = response.status
         xhr.responseText = response.body
+        xhr.readyState = 4
         responseHandler.call
       end
     end
