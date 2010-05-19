@@ -1,5 +1,6 @@
 === 0.1.3 / 2010-05-19
 
+* alway return headers from doc ... the rack request might not be current
 * handle off-site scripts, pass redirects to envjs
 * match escaping from capy 0.3.8
 * don't assume cucumber if no world ... some people had trouble
