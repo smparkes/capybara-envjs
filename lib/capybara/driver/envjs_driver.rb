@@ -166,8 +166,14 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       browser.master["load"] = proc do |*args|
         if args.size == 2 and args[1].to_s != "[object split_global]"
           file, window = *args
-          get(file, {}, env)
-          window["evaluate"].call response.body
+          body = nil
+          if file.index(app_host) == 0
+            get(file, {}, env)
+            body = response.body
+          else
+            body = Net::HTTP.get(URI.parse(file))
+          end
+          window["evaluate"].call body
         else
           master_load.call *args
         end
@@ -210,6 +216,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         xhr.status = response.status
         xhr.responseText = response.body
         xhr.readyState = 4
+        url = app_host+url
+        xhr.__url = url
         responseHandler.call
       end
     end
