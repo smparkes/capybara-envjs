@@ -67,7 +67,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
 
     def select(option)
-      option_node = all_unfiltered("//option[text()='#{option}']") || all_unfiltered("//option[contains(.,'#{option}')]")
+      escaped = Capybara::XPath.escape(option)
+      option_node = all_unfiltered("//option[text()=#{escaped}]") || all_unfiltered("//option[contains(.,#{escaped})]")
       option_node[0].node.selected = true
     rescue Exception => e
       options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
@@ -80,7 +81,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       end
 
       begin
-        option_node = (all_unfiltered("//option[text()='#{option}']") || all_unfiltered("//option[contains(.,'#{option}')]")).first
+        escaped = Capybara::XPath.escape(option)
+        option_node = (all_unfiltered("//option[text()=#{escaped}]") || all_unfiltered("//option[contains(.,#{escaped})]")).first
         option_node.node.selected = false
       rescue Exception => e
         options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
