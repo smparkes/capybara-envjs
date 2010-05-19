@@ -15,8 +15,8 @@ Hoe.spec 'capybara-envjs' do
   self.extra_rdoc_files = Dir['*.rdoc']
 
   self.extra_deps = [
-    ['capybara', '>= 0.3.6'],
-    ['envjs', '>= 0.3.0']
+    ['capybara', '>= 0.3.8'],
+    ['envjs', '>= 0.3.5']
   ]
 
   self.extra_dev_deps = [

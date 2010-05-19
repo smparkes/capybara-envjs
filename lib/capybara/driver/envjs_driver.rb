@@ -252,7 +252,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   def response_headers
-    rack_test? ? response.headers : Headers.new(browser["window"]["document"]["__headers__"])
+    Headers.new(browser["window"]["document"]["__headers__"])
   end
 
   def find(selector)
