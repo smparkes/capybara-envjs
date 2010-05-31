@@ -247,7 +247,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       @hash = hash
     end
     def [] key
-      @hash[key.downcase]
+      pair = @hash.find { |pair| pair[0].downcase == key.downcase }
+      pair && pair[1]
     end
   end
 
