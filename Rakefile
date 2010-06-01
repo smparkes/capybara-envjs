@@ -9,14 +9,14 @@ Hoe.plugins.delete :rubyforge
 
 Hoe.spec 'capybara-envjs' do
   developer 'Steven Parkes', 'smparkes@smparkes.net'
-  self.version = "0.1.3"
+  self.version = "0.1.4"
 
   self.readme_file      = 'README.rdoc'
   self.extra_rdoc_files = Dir['*.rdoc']
 
   self.extra_deps = [
     ['capybara', '>= 0.3.8'],
-    ['envjs', '>= 0.3.5']
+    ['envjs', '>= 0.3.6']
   ]
 
   self.extra_dev_deps = [
