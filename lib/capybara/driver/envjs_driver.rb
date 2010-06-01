@@ -144,7 +144,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
   def initialize(app)
 
-
     @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || "http://example.com")
 
     @rack_test = @app_host =~ %r{^https?://[^.]*\.?example\.(com|org)}
@@ -183,9 +182,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       browser.master["connection"] = @connection = proc do |*args|
         xhr, responseHandler, data = *args
         url = xhr.url
-        if url.index(app_host) == 0
-          url.slice! 0..(app_host.length-1)
-        end
         params = data || {}
         method = xhr["method"].downcase.to_sym
         e = env;
@@ -196,12 +192,18 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
           e["CONTENT_LENGTH"] ||= params.length
         end
         begin
+          if url.index(app_host) == 0
+            url.slice! 0..(app_host.length-1)
+          end
           # puts "send #{method} #{url} #{params}"
           send method, url, params, e
           while response.status == 302
             params = {}
             method = :get
             url = response.location
+            if url.index(app_host) == 0
+              url.slice! 0..(app_host.length-1)
+            end
             # puts "redirect #{method} #{url} #{params}"
             send method, url, params, e
           end
@@ -216,7 +218,12 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         xhr.status = response.status
         xhr.responseText = response.body
         xhr.readyState = 4
-        url = app_host+url
+        if url.index(app_host) == 0
+          url.slice! 0..(app_host.length-1)
+        end
+        if url.slice(0..0) == "/"
+          url = app_host+url
+        end
         xhr.__url = url
         responseHandler.call
       end
