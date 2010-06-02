@@ -144,9 +144,10 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
   def initialize(app)
 
-    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || "http://example.com")
+    @default_host = "http://"+ (Capybara.default_host || "www.example.com")
+    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || @default_host)
 
-    @rack_test = @app_host =~ %r{^https?://[^.]*\.?example\.(com|org)}
+    @rack_test = @app_host == @default_host
 
     if rack_test?
       require 'rack/test'
