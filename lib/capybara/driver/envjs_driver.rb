@@ -144,10 +144,11 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
   def initialize(app)
 
-    @default_host = "http://"+ (Capybara.default_host || "www.example.com")
-    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || @default_host)
+    default_host = @default_host = (Capybara.default_host || "www.example.com")
+    @default_url = "http://"+@default_host
+    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || @default_url)
 
-    @rack_test = @app_host == @default_host
+    @rack_test = @app_host == @default_url
 
     if rack_test?
       require 'rack/test'
@@ -155,6 +156,9 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         include ::Rack::Test::Methods
         alias_method :response, :last_response
         alias_method :request, :last_request
+        define_method :build_rack_mock_session do
+          Rack::MockSession.new(app, default_host)
+        end
       end
     end
 
@@ -198,7 +202,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
           end
           # puts "send #{method} #{url} #{params}"
           send method, url, params, e
-          while response.status == 302
+          while response.status == 302 || response.status == 301
             params = {}
             method = :get
             url = response.location
