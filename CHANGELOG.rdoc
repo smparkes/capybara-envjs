@@ -1,3 +1,8 @@
+=== 0.1.5 / 2010-06-02
+
+* Finish cleanup of rack-test host handling
+* follow capy rack-test pattern
+
 === 0.1.4 / 2010-05-31
 
 * Fix URL handling edge cases
