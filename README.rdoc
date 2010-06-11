@@ -23,6 +23,11 @@ Install as a gem:
 
 See the Capybara docs. Use the symbol :envjs for the driver/default_driver as appropriate.
 
+If you are using cucumber, you might add the following lines to your features/support/env.rb
+
+  require 'capybara/envjs'
+  Capybara.javascript_driver = :envjs
+
 == License:
 
 (The MIT License)
