@@ -53,6 +53,14 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       end
     end
 
+    def value
+      if tag_name == 'textarea'
+        node.innerText
+      else
+        super
+      end
+    end
+
     def set(value)
       case node.tagName
       when "TEXTAREA"
