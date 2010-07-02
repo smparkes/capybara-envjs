@@ -76,7 +76,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
     def select(option)
       escaped = Capybara::XPath.escape(option)
-      option_node = all_unfiltered("//option[text()=#{escaped}]").first || all_unfiltered("//option[contains(.,#{escaped})]").first
+      option_node = all_unfiltered(".//option[text()=#{escaped}]").first || all_unfiltered(".//option[contains(.,#{escaped})]").first
       option_node.node.selected = true
     rescue Exception => e
       options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
@@ -90,7 +90,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
       begin
         escaped = Capybara::XPath.escape(option)
-        option_node = (all_unfiltered("//option[text()=#{escaped}]") || all_unfiltered("//option[contains(.,#{escaped})]")).first
+        option_node = (all_unfiltered(".//option[text()=#{escaped}]") || all_unfiltered(".//option[contains(.,#{escaped})]")).first
         option_node.node.selected = false
       rescue Exception => e
         options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
@@ -292,7 +292,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     window = browser["window"]
     null = browser["null"]
     type = window["XPathResult"]["ANY_TYPE"]
-    # print window.document.xml
     result_set = window.document.evaluate selector, window.document, null, type, null
     nodes = []
     while n = result_set.iterateNext()
