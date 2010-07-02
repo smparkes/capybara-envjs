@@ -76,8 +76,8 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
     def select(option)
       escaped = Capybara::XPath.escape(option)
-      option_node = all_unfiltered("//option[text()=#{escaped}]") || all_unfiltered("//option[contains(.,#{escaped})]")
-      option_node[0].node.selected = true
+      option_node = all_unfiltered("//option[text()=#{escaped}]").first || all_unfiltered("//option[contains(.,#{escaped})]").first
+      option_node.node.selected = true
     rescue Exception => e
       options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
       raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
@@ -204,6 +204,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         if e["CONTENT_TYPE"] =~ %r{^multipart/form-data;}
           e["CONTENT_LENGTH"] ||= params.length
         end
+        times = 0
         begin
           if url.index(app_host) == 0
             url.slice! 0..(app_host.length-1)
@@ -211,6 +212,9 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
           # puts "send #{method} #{url} #{params}"
           send method, url, params, e
           while response.status == 302 || response.status == 301
+            if (times += 1) > 5
+              raise Capybara::InfiniteRedirectError, "redirected more than 5 times, check for infinite redirects."
+            end
             params = {}
             method = :get
             url = response.location
@@ -221,7 +225,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
             send method, url, params, e
           end
         rescue Exception => e
-          print "got #{e} #{response.inspect}\n"
+          # print "got #{e} #{response.inspect}\n"
           raise e
         end
         @source = response.body
@@ -262,6 +266,10 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     browser["window"].document.xml
   end
 
+  def cleanup!
+    clear_cookies
+  end
+
   class Headers
     def initialize hash
       @hash = hash
@@ -274,6 +282,10 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
   def response_headers
     Headers.new(browser["window"]["document"]["__headers__"])
+  end
+
+  def status_code
+    response.status
   end
 
   def find(selector)
@@ -294,6 +306,11 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   def wait_until max
     fired, wait = *browser["Envjs"].wait(-max*1000)
     raise Capybara::TimeoutError if !fired && wait.nil?
+  end
+
+  def execute_script(script)
+    browser["window"]["evaluate"].call(script)
+    nil
   end
 
   def evaluate_script(script)
