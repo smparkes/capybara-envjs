@@ -1,3 +1,10 @@
+=== 0.1.6 / 2010-07-05
+
+* scope select to node
+* Select bug fix and bring up to date with recent capy changes
+* implement value for textareas
+* doc tweaks [Kurt Werle]
+
 === 0.1.5 / 2010-06-02
 
 * Finish cleanup of rack-test host handling
