@@ -22,16 +22,16 @@ if false # for testing ... but seems okay
 end
 
 class Capybara::Driver::Envjs < Capybara::Driver::Base
-  class Node < Capybara::Node
+  class Node < Capybara::Driver::Node
     def text
-      node.innerText
+      native.innerText
     end
 
     def [](name)
       value = if name.to_sym == :class
-        node.className
+        native.className
       else
-        node.getAttribute(name.to_s)
+        native.getAttribute(name.to_s)
       end
       return value if value and not value.to_s.empty?
     end
@@ -41,35 +41,33 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       attr_name == "class" and attr_name = "className"
       case
       when 'select' == tag_name && 'value' == attr_name
-        if node['multiple']
-          all_unfiltered(".//option[@selected='selected']").map { |option| option.node.innerText  }
+        if native['multiple']
+          all_unfiltered(".//option[@selected='selected']").map { |option| option.native.innerText  }
         else
-          node.value
+          native.value
         end
-#      when 'input' == tag_name && 'checkbox' == type && 'checked' == attr_name
-#         node[attr_name] == 'checked' ? true : false
       else
-        node[attr_name]
+        native[attr_name]
       end
     end
 
     def value
       if tag_name == 'textarea'
-        node.innerText
+        native.innerText
       else
-        super
+        native.getAttribute("value")
       end
     end
 
     def set(value)
-      case node.tagName
+      case native.tagName
       when "TEXTAREA"
-        node.innerText = value
+        native.innerText = value
       else
-        case node.getAttribute("type")
+        case native.getAttribute("type")
         when "checkbox", "radio"
-          node.click if node.checked != value
-        else; node.setAttribute("value",value)
+          native.click if native.checked != value
+        else; native.setAttribute("value",value)
         end
       end
     end
@@ -77,21 +75,21 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     def select(option)
       escaped = Capybara::XPath.escape(option)
       option_node = all_unfiltered(".//option[text()=#{escaped}]").first || all_unfiltered(".//option[contains(.,#{escaped})]").first
-      option_node.node.selected = true
+      option_node.native.selected = true
     rescue Exception => e
       options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
       raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
     end
 
     def unselect(option)
-      if !node['multiple']
+      if !native['multiple']
         raise Capybara::UnselectNotAllowed, "Cannot unselect option '#{option}' from single select box."
       end
 
       begin
         escaped = Capybara::XPath.escape(option)
         option_node = (all_unfiltered(".//option[text()=#{escaped}]") || all_unfiltered(".//option[contains(.,#{escaped})]")).first
-        option_node.node.selected = false
+        option_node.native.selected = false
       rescue Exception => e
         options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
         raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
@@ -109,7 +107,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
 
     def tag_name
-      node.tagName.downcase
+      native.tagName.downcase
     end
 
     def visible?
@@ -120,7 +118,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       window = @driver.browser["window"]
       null = @driver.browser["null"]
       type = window["XPathResult"]["ANY_TYPE"]
-      result_set = window.document.evaluate selector, node, null, type, null
+      result_set = window.document.evaluate selector, native, null, type, null
       nodes = []
       while n = result_set.iterateNext()
         nodes << Node.new(@driver, n)
@@ -138,7 +136,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     def _event(target,cls,type,bubbles,cancelable)
       e = @driver.browser["document"].createEvent(cls);
       e.initEvent(type,bubbles,cancelable);
-      target.node.dispatchEvent(e);
+      target.native.dispatchEvent(e);
     end
 
   end
