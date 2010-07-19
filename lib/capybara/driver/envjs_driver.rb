@@ -55,7 +55,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       if tag_name == 'textarea'
         native.innerText
       else
-        native.getAttribute("value")
+        self[:value]
       end
     end
 
@@ -72,7 +72,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       end
     end
 
-    def select(option)
+    def select_option(option)
       escaped = Capybara::XPath.escape(option)
       option_node = all_unfiltered(".//option[text()=#{escaped}]").first || all_unfiltered(".//option[contains(.,#{escaped})]").first
       option_node.native.selected = true
@@ -81,7 +81,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
     end
 
-    def unselect(option)
+    def unselect_option(option)
       if !native['multiple']
         raise Capybara::UnselectNotAllowed, "Cannot unselect option '#{option}' from single select box."
       end
@@ -97,13 +97,15 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
 
     def click
-      _event(self,"MouseEvent",'click',true,true)
+      _event(self,"MouseEvents",'click',true,true, :button => 1)
     end
 
     def drag_to(element)
-      _event(self,"MouseEvent",'mousedown',true,true)
-      _event(element,"MouseEvent",'mousemove',true,true)
-      _event(element,"MouseEvent",'mouseup',true,true)
+      # distance stuff is arbitrary at this point, to make jquery.ui happy ...
+      _event(self,"MouseEvents",'mousedown',true,true, :button => 1, :pageX => 0, :pageY => 0)
+      _event(element,"MouseEvents",'mousemove',true,true, :button => 1, :pageX => 1, :pageY => 1)
+      _event(element,"MouseEvents",'mousemove',true,true, :button => 1, :pageX => 0, :pageY => 0)
+      _event(element,"MouseEvents",'mouseup',true,true, :button => 1, :pageX => 0, :pageY => 0)
     end
 
     def tag_name
@@ -126,6 +128,10 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       nodes
     end
 
+    def find(locator)
+      all_unfiltered locator
+    end
+
     def trigger event
       # FIX: look up class and attributes
       _event(self, "", event.to_s, true, true )
@@ -133,9 +139,12 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
     private
 
-    def _event(target,cls,type,bubbles,cancelable)
-      e = @driver.browser["document"].createEvent(cls);
+    def _event(target,cls,type,bubbles,cancelable,attributes = {})
+      e = @driver.browser["document"].createEvent(false && cls || ""); # disabled for now
       e.initEvent(type,bubbles,cancelable);
+      attributes.each do |k,v|
+        e[k.to_s] = v
+      end
       target.native.dispatchEvent(e);
     end
 
