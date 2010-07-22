@@ -221,7 +221,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
               url.slice! 0..(app_host.length-1)
             end
             # puts "redirect #{method} #{url} #{params}"
-            send method, url, params, e
+            send method, url, params, env
           end
         rescue Exception => e
           # print "got #{e} #{response.inspect}\n"
