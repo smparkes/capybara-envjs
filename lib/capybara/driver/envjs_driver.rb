@@ -72,28 +72,15 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       end
     end
 
-    def select_option(option)
-      escaped = Capybara::XPath.escape(option)
-      option_node = all_unfiltered(".//option[text()=#{escaped}]").first || all_unfiltered(".//option[contains(.,#{escaped})]").first
-      option_node.native.selected = true
-    rescue Exception => e
-      options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
-      raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
+    def select_option
+      native.selected = true
     end
 
-    def unselect_option(option)
-      if !native['multiple']
-        raise Capybara::UnselectNotAllowed, "Cannot unselect option '#{option}' from single select box."
+    def unselect_option
+      if !select_node['multiple']
+        raise Capybara::UnselectNotAllowed, "Cannot unselect option from single select box."
       end
-
-      begin
-        escaped = Capybara::XPath.escape(option)
-        option_node = (all_unfiltered(".//option[text()=#{escaped}]") || all_unfiltered(".//option[contains(.,#{escaped})]")).first
-        option_node.native.selected = false
-      rescue Exception => e
-        options = all_unfiltered(".//option").map { |o| "'#{o.text}'" }.join(', ')
-        raise Capybara::OptionNotFound, "No such option '#{option}' in this select box. Available options: #{options}"
-      end
+      native.removeAttribute('selected')
     end
 
     def click
@@ -139,6 +126,11 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
 
     private
 
+    # a reference to the select node if this is an option node
+    def select_node
+      find('./ancestor::select').first
+    end
+    
     def _event(target,cls,type,bubbles,cancelable,attributes = {})
       e = @driver.browser["document"].createEvent(false && cls || ""); # disabled for now
       e.initEvent(type,bubbles,cancelable);
