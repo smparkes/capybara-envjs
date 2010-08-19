@@ -28,15 +28,6 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
 
     def [](name)
-      value = if name.to_sym == :class
-        native.className
-      else
-        native.getAttribute(name.to_s)
-      end
-      return value if value and not value.to_s.empty?
-    end
-
-    def [](name)
       attr_name = name.to_s
       attr_name == "class" and attr_name = "className"
       case
