@@ -134,19 +134,25 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   end
 
   attr_reader :app
-  attr_reader :app_host
 
   def rack_test?
-    @rack_test
+    # p "rt?", app_host, default_url, (app_host == default_url)
+    app_host == default_url
+  end
+
+  def default_host
+    (Capybara.default_host || "www.example.com")
+  end
+
+  def default_url
+    "http://"+default_host
+  end
+
+  def app_host
+    (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || default_url)
   end
 
   def initialize(app)
-
-    default_host = @default_host = (Capybara.default_host || "www.example.com")
-    @default_url = "http://"+@default_host
-    @app_host = (ENV["CAPYBARA_APP_HOST"] || Capybara.app_host || @default_url)
-
-    @rack_test = @app_host == @default_url
 
     if rack_test?
       require 'rack/test'
@@ -155,6 +161,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         alias_method :response, :last_response
         alias_method :request, :last_request
         define_method :build_rack_mock_session do
+          # p default_host
           Rack::MockSession.new(app, default_host)
         end
       end
@@ -197,11 +204,14 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
         end
         times = 0
         begin
+          # p url, app_host
           if url.index(app_host) == 0
             url.slice! 0..(app_host.length-1)
           end
-          # puts "send #{method} #{url} #{params}"
+          # p url
+          # puts "send #{method} #{url} #{params} #{e}"
           send method, url, params, e
+          # p "after" #, response
           while response.status == 302 || response.status == 301
             if (times += 1) > 5
               raise Capybara::InfiniteRedirectError, "redirected more than 5 times, check for infinite redirects."
@@ -242,6 +252,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     as_url = URI.parse path
     base = URI.parse app_host
     path = (base + as_url).to_s
+    # p path
     browser["window"].location.href = path
   end
 
