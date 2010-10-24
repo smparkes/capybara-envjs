@@ -121,7 +121,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     def select_node
       find('./ancestor::select').first
     end
-    
+
     def _event(target,cls,type,bubbles,cancelable,attributes = {})
       e = @driver.browser["document"].createEvent(false && cls || ""); # disabled for now
       e.initEvent(type,bubbles,cancelable);
@@ -259,7 +259,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
   def current_url
     browser["window"].location.href
   end
-  
+
   def source
     browser["window"].document.__original_text__
   end
@@ -325,7 +325,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       @_browser = Johnson::Runtime.new :size => Integer(ENV["JOHNSON_HEAP_SIZE"] || 0x4000000)
       @_browser.extend Envjs::Runtime
     end
-    
+
     @_browser
   end
 
@@ -345,4 +345,8 @@ private
     env
   end
 
+end
+
+Capybara.register_driver :envjs do |app|
+  Capybara::Driver::Envjs.new(app)
 end

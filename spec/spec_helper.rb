@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'bundler/setup'
 require 'capybara/envjs'
 
 spec_dir = nil
