@@ -188,7 +188,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       browser.master["connection"] = @connection = proc do |*args|
         xhr, responseHandler, data = *args
         url = xhr.url
-        params = data || {}
+        params = data || ""
         method = xhr["method"].downcase.to_sym
         e = env;
         if method == :post or method == :put
