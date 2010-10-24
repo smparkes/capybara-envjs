@@ -91,7 +91,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     end
 
     def visible?
-      all_unfiltered("./ancestor-or-self::*[contains(@style, 'display:none') or contains(@style, 'display: none')]").empty?
+      find("./ancestor-or-self::*[contains(@style, 'display:none') or contains(@style, 'display: none')]").empty?
     end
 
     def find(locator)

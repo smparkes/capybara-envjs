@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    capybara-envjs (0.1.6)
+    capybara-envjs (0.4.0)
       capybara (~> 0.4.0)
       envjs (>= 0.3.7)
 
