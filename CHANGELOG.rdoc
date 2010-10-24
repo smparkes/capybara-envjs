@@ -1,3 +1,10 @@
+=== 0.4.0 / 2010-10-24
+
+* Bring up to date with capy 0.4.0
+* Convert from hoe to bundler
+* make app_host/default_host dynamic
+* clean request parameters on redirect
+
 === 0.1.6 / 2010-07-05
 
 * scope select to node
