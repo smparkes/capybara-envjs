@@ -33,7 +33,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       case
       when 'select' == tag_name && 'value' == attr_name
         if native['multiple']
-          all_unfiltered(".//option[@selected='selected']").map { |option| option.native.innerText  }
+          find(".//option[@selected='selected']").map { |option| option.native[:value] || option.native.innerText  }
         else
           native.value
         end
@@ -94,20 +94,16 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       all_unfiltered("./ancestor-or-self::*[contains(@style, 'display:none') or contains(@style, 'display: none')]").empty?
     end
 
-    def all_unfiltered selector
+    def find(locator)
       window = @driver.browser["window"]
       null = @driver.browser["null"]
       type = window["XPathResult"]["ANY_TYPE"]
-      result_set = window.document.evaluate selector, native, null, type, null
+      result_set = window.document.evaluate(locator, native, null, type, null)
       nodes = []
       while n = result_set.iterateNext()
         nodes << Node.new(@driver, n)
       end
       nodes
-    end
-
-    def find(locator)
-      all_unfiltered locator
     end
 
     def trigger event
