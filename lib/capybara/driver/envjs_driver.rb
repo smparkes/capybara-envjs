@@ -264,7 +264,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
     browser["window"].document.xml
   end
 
-  def cleanup!
+  def reset!
     clear_cookies
   end
 
