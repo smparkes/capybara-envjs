@@ -195,6 +195,7 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
           e.merge! "CONTENT_TYPE" => xhr.headers["Content-Type"]
         end
         e.merge! "HTTP_ACCEPT" => xhr.headers["Accept"] if xhr.headers["Accept"]
+        e.merge! "HTTP_X_REQUESTED_WITH" => xhr.headers["X-Requested-With"] if xhr.headers["X-Requested-With"]
         if e["CONTENT_TYPE"] =~ %r{^multipart/form-data;}
           e["CONTENT_LENGTH"] ||= params.length
         end
