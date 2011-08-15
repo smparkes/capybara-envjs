@@ -176,7 +176,11 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
             get(file, {}, env)
             body = response.body
           else
-            body = Net::HTTP.get(URI.parse(file))
+            uri = URI.parse(file)
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = uri.scheme == 'https'
+            response = http.request(Net::HTTP::Get.new(uri.request_uri))
+            body = response.body
           end
           window["evaluate"].call body
         else
