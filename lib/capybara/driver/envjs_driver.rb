@@ -171,12 +171,16 @@ class Capybara::Driver::Envjs < Capybara::Driver::Base
       browser.master["load"] = proc do |*args|
         if args.size == 2 and args[1].to_s != "[object split_global]"
           file, window = *args
+          uri = URI.parse(file)
           body = nil
-          if file.index(app_host) == 0
+          if uri.host.index(URI.parse(app_host).host) == 0
             get(file, {}, env)
             body = response.body
           else
-            body = Net::HTTP.get(URI.parse(file))
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = uri.scheme == 'https'
+            response = http.request(Net::HTTP::Get.new(uri.request_uri))
+            body = response.body
           end
           window["evaluate"].call body
         else
