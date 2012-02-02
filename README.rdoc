@@ -1,3 +1,7 @@
+= CAPYBARA-ENVJS IS MOTHBALLED
+
+Since the Ruby port of envjs is mothballed, capybara-envjs is as well. I suggest looking at something based on v8 and/or headless webkit.
+
 = capybara-envjs
 
 * http://github.com/smparkes/capybara-envjs
